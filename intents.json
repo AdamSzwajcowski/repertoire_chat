@@ -1,0 +1,20 @@
+{"intents": [
+    {"tag": "greetings",
+    "patterns": ["hello", "hey", "hi", "good morning", "good afternoon", "what's up", "hi there"],
+    "response": "Hello! What Can I do for you?"
+    },
+    {"tag": "solo repertoire",
+    "patterns": ["what can you play solo?", "what is your solo repertoire?", "which songs do you play solo?",
+    "fingerstyle repertoire", "solo repertoire", "tell me your solo repertoire"],
+    "response": "Here is my solo repertoire:"
+    },
+    {"tag": "duo repertoire",
+    "patterns": ["what can you play in a duo?", "what is your duo repertoire?", "which songs do you play as a duo?",
+    "duo repertoire", "repertoire with a singer", "tell me your duo repertoire", "which songs do you sing?"],
+    "response": "Here is my duo repertoire:"
+    },
+    {"tag": "bye",
+    "patterns": ["goodbye!", "see you!", "bye", "goodnight"],
+    "response": "Bye!"
+    }
+]}
