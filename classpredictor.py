@@ -15,9 +15,14 @@ class ClassPredictor:
         """        
         self.lemmatizer = WordNetLemmatizer()
         self.words = pickle.load(open('model/words.pkl', 'rb'))
+        self.classes = pickle.load(open('model/classes.pkl', 'rb'))
         self.model = load_model('model/chatbot_model.keras')
         self.genres = ['pop','rock','jazz','film','polish','soul',
                        'musical','ballad', '70','80','90']
+        self.mode = []  # solo or duo
+
+    def check_for_soloduo(self, sentence):
+        a = 1 # to implement
 
     def check_for_song_name(self, sentence):
         """
@@ -45,8 +50,7 @@ class ClassPredictor:
         else:
             artist_name = []
         
-        return sentence, artist_name
-        
+        return sentence, artist_name        
         
     def check_for_genre_name(self, sentence):
         """
@@ -107,13 +111,13 @@ class ClassPredictor:
         ind_max = np.argmax(results)
         probability = results[ind_max]
     
-        return ind_max, probability, proper_name
+        return self.classes[ind_max], probability, proper_name
     
 if __name__ == "__main__":
     predictor = ClassPredictor()
     sentence, song_name = predictor.check_for_names('Do you play "Smoke on the Water"?')
     print(sentence, song_name)
-    sentence, artist_name = predictor.check_for_names('Do you play anything by ABBA ?')
+    sentence, artist_name = predictor.check_for_names('Do you play anything by ABBA?')
     print(sentence, artist_name)
     sentence, genre_name = predictor.check_for_names('Do you play any film music?')
     print(sentence, genre_name)
