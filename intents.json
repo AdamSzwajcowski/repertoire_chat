@@ -8,13 +8,13 @@
     {"tag": "repertoire",
     "patterns": ["what is your repertoire?", "which songs do you play?", "repertoire", "tell me your repertoire"]
     },
-    {"tag": "song name",
+    {"tag": "song_name",
     "patterns": ["song_name", "can you play song_name?", "do you play song_name?", "do you have song_name in your repertoire?"]
     },  
-    {"tag": "artist name",
+    {"tag": "artist_name",
     "patterns": ["do you play anything by artist_name?", "can you play something by artist_name?", "any songs by artist_name?", "do you have anything by artist_name"]
     },
-    {"tag": "genre name",
+    {"tag": "genre_name",
     "patterns": ["do you play any genre_name", "do you have any genre_name songs in your repertoire?", "genre_name", "can you play some genre_name", "genre_name songs", "genre_name music"]
     },
     {"tag": "bye",

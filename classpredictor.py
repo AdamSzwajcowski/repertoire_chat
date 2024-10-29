@@ -1,6 +1,7 @@
 import pickle
 import numpy as np
 import re
+from enum import Enum
 
 import nltk
 from nltk.stem import WordNetLemmatizer
@@ -15,14 +16,17 @@ class ClassPredictor:
         """        
         self.lemmatizer = WordNetLemmatizer()
         self.words = pickle.load(open('model/words.pkl', 'rb'))
-        self.classes = pickle.load(open('model/classes.pkl', 'rb'))
+        self.Classes = Enum("Classes", pickle.load(open('model/classes.pkl', 'rb')))
         self.model = load_model('model/chatbot_model.keras')
         self.genres = ['pop','rock','jazz','film','polish','soul',
                        'musical','ballad', '70','80','90']
-        self.mode = []  # solo or duo
+        self.context = []  # solo or duo
 
-    def check_for_soloduo(self, sentence):
-        a = 1 # to implement
+    def check_context(self, sentence):
+        if 'solo' in sentence or 'fingerstyle' in sentence:
+            self.context = 'solo'
+        elif 'duo' in sentence:
+            self.context = 'duo'
 
     def check_for_song_name(self, sentence):
         """
@@ -94,10 +98,10 @@ class ClassPredictor:
         """        
         sentence_words = self.clean_up_sentence(sentence)
         bag = [0] * len(self.words)
-        for w in sentence_words:
-            for i, word in enumerate(self.words):
-                if word == w:
-                    bag[i] = 1
+        for sentence_word in sentence_words:
+            for ind, word in enumerate(self.words):
+                if word == sentence_word:
+                    bag[ind] = 1
                     
         return np.array(bag)
 
@@ -105,21 +109,22 @@ class ClassPredictor:
         """
         Predict the class based on the sentence.
         """
+        self.check_context(sentence)
         sentence, proper_name = self.check_for_names(sentence)
         bag = self.bag_of_words(sentence)
         results = self.model.predict(np.array([bag]))[0]
         ind_max = np.argmax(results)
         probability = results[ind_max]
     
-        return self.classes[ind_max], probability, proper_name
+        return self.Classes(ind_max+1), probability, proper_name, self.context
     
-if __name__ == "__main__":
-    predictor = ClassPredictor()
-    sentence, song_name = predictor.check_for_names('Do you play "Smoke on the Water"?')
-    print(sentence, song_name)
-    sentence, artist_name = predictor.check_for_names('Do you play anything by ABBA?')
-    print(sentence, artist_name)
-    sentence, genre_name = predictor.check_for_names('Do you play any film music?')
-    print(sentence, genre_name)
-    sentence, genre_name = predictor.check_for_names('What is your repertoire?')
-    print(sentence, genre_name)
+# if __name__ == "__main__":
+#     predictor = ClassPredictor()
+#     sentence, song_name = predictor.check_for_names('Do you play "Smoke on the Water"?')
+#     print(sentence, song_name)
+#     sentence, artist_name = predictor.check_for_names('Do you play anything by ABBA?')
+#     print(sentence, artist_name)
+#     sentence, genre_name = predictor.check_for_names('Do you play any film music?')
+#     print(sentence, genre_name)
+#     sentence, genre_name = predictor.check_for_names('What is your repertoire?')
+#     print(sentence, genre_name)
