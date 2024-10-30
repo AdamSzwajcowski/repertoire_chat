@@ -23,6 +23,9 @@ class ClassPredictor:
         self.context = []  # solo or duo
 
     def check_context(self, sentence):
+        """
+        Check whether the context of solo/duo repertoire has changed.
+        """
         if 'solo' in sentence or 'fingerstyle' in sentence:
             self.context = 'solo'
         elif 'duo' in sentence:
