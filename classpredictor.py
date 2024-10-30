@@ -39,9 +39,9 @@ class ClassPredictor:
 
     def check_for_artist_name(self, sentence):
         """
-        Check if the sentence includes an artist name (anything after 'by').
+        Check if the sentence includes an artist name (anything after 'by ').
         """
-        pattern = "by"
+        pattern = " by "
         match = re.search(f'{pattern}(.*)', sentence)
         if match:
             artist_name = match.group(1).strip()

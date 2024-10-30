@@ -2,84 +2,108 @@ from classpredictor import ClassPredictor
 from enum import Enum
 
 # context enum for varying the response based on the previous message
-Context = Enum('Context', ['SOLODUO','REPHRASE'])
+Context = Enum('Context', ['NONE','SOLODUO','REPHRASE'])
 
 class ResponseGenerator:
     
     def __init__(self):
         self.predictor = ClassPredictor()
         self.soloduo = []  # solo or duo context
-        self.context = []
+        self.context = [Context.NONE]  # general conversational context
         
         
     def check_soloduo(self, sentence):
         """
-        Check whether the context of solo/duo repertoire has changed and return
-        the current value.
+        Check whether the context of solo/duo repertoire has changed.
         """
         if 'solo' in sentence or 'fingerstyle' in sentence:
             self.soloduo = 'solo'
         elif 'duo' in sentence:
             self.soloduo = 'duo'
-
-        return self.soloduo
     
     def ask_for_soloduo(self):
-        """
-        Request for the user to establish the context of the conversation
-        (solo/duo repertoire).
-        """
-        return('''Do you mean solo (fingerstyle) or in a duo?''')
+        return('Do you mean solo (fingerstyle) or in a duo?')
             
     def greetings(self):
-        """
-        Return the response to greetings.
-        """
-        return(''''Hello! How can I help you?''')
+        return('Hello! How can I help you?')
                
     def summary(self):
-        """
-        Return the summary of the scope of the chatbot
-        """
-        return(''''I'm here to help you with repertoire-based queries. You can
-               ask for my solo or duo repertoire, as well as search for
-               specific songs, artists or genres. If you want to search for a
-               specific song, please put it in the double quotation mark (e.g.
-               "Dancing Queen") - this will make my job easier!''')
+        return("to be fixed")
+    
+    def bye(self):
+        return('Bye!')
+
+    def misunderstand(self):
+        '''
+        Punt if there are two misunderstandings in a row. Otherwise, ask for rephrasing.
+        '''
+        if self.context[0] == Context.REPHRASE:
+            return("I'm afraid I can't help you with that. Can I do anything else for you?")
+            self.context = [Context.NONE]           
+        else:
+            return("I couldn't quite understand, could you rephrase?")
+            self.context.insert(0,Context.REPHRASE)
             
+        
 
     def take_action(self, category, proper_name):
         """
         Perform an action based on the recognized category.
         """
+        self.context = [Context.NONE]    # any previous context becomes irrelevant
         if category == self.predictor.classes.GREETINGS:
             return(self.greetings())
         elif category == self.predictor.classes.SUMMARY:
             return(self.summary())
-        elif category == self.predictor.classes.REPERTOIRE:
-            if not self.check_soloduo(sentence)
-                
-            print("Here's my repertoire:")  # call do bazy danych
+        elif category == self.predictor.classes.BYE:
+            return(self.bye())
+        else:  # REPERTOIRE, SONG_NAME, ARTIST_NAME or GENRE_NAME
+            if not self.soloduo:
+                self.context = [Context.SOLODUO]
+                # append tuple with intended action to take once solo/duo is specified
+                self.context.append((category,proper_name))
+                return(self.ask_for_soloduo())
+            else:
+                return("Here's the database output:")  # call do bazy danych
 
     def respond(self, sentence):
         """
         Return a response based on the input sentence (prompt).
         """
-        # empty the context queue if applicable
-        while self.context:
-            if self.context[0] == Context.SOLODUO:
-                
-        
-        # run the model if there is no context left
-        else:   
+        print(self.context)
+        if self.context[0] == Context.SOLODUO:              
+            self.check_soloduo(sentence)               
+            # check if some other request was made despite only asking for clarification
             category, probability, proper_name = self.predictor.predict(sentence)
+            print(category, probability)
+            if probability > 0.95:                   
+                return(self.take_action(category, proper_name))                     
+            elif not self.soloduo:   # if the user still hasn't specified solo/duo
+                return(self.misunderstand())
+            else:   # if the user simply provided solo/duo
+                # read the category and proper_name from the context after SOLODUO
+                category, proper_name = self.context[1]
+                return(self.take_action(category, proper_name))
+                    
+        elif self.context[0] == Context.NONE:
+            self.check_soloduo(sentence)
+            category, probability, proper_name = self.predictor.predict(sentence)
+            print(category, probability)
             if probability > 0.95:   # understood with very good certainty
-                funkcja_do_analizy
+                return(self.take_action(category, proper_name))
             else:
-                przeszukaj_baze # przeszukiwanie baz
-                if znalezione:
-                    return(odpowiednia_funkcja)
+                #przeszukaj_baze # przeszukiwanie baz
+                if False:   # if znalezione
+                    return(1)
                 elif probability > 0.7: # less certain, but still quite probable
-                    funkcja_do_analizy
+                    return(self.take_action(category, proper_name))               
                 else:
-                    return(funkcja_do_nierozumienia)
+                    return(self.misunderstand())
+                
+
+# test
+if __name__ == "__main__":
+    generator = ResponseGenerator()
+    while True:
+        print(generator.respond(input()))
+    
