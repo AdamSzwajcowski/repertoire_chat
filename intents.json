@@ -1,23 +1,26 @@
 {"intents": [
-    {"tag": "greetings",
+    {"category": "greetings",
     "patterns": ["hello", "hey", "hi", "good morning", "good afternoon", "what's up", "hi there"]
     },
-    {"tag": "summary",
+    {"category": "summary",
     "patterns": ["what do you play?", "what can you play?", "tell me what you play", "tell me something about yourself"]
     },
-    {"tag": "repertoire",
+    {"category": "repertoire",
     "patterns": ["what is your repertoire?", "which songs do you play?", "repertoire", "tell me your repertoire"]
     },
-    {"tag": "song_name",
+    {"category": "song_name",
     "patterns": ["song_name", "can you play song_name?", "do you play song_name?", "do you have song_name in your repertoire?"]
     },  
-    {"tag": "artist_name",
+    {"category": "artist_name",
     "patterns": ["do you play anything by artist_name?", "can you play something by artist_name?", "any songs by artist_name?", "do you have anything by artist_name"]
     },
-    {"tag": "genre_name",
+    {"category": "genre_name",
     "patterns": ["do you play any genre_name", "do you have any genre_name songs in your repertoire?", "genre_name", "can you play some genre_name", "genre_name songs", "genre_name music"]
     },
-    {"tag": "bye",
+    {"category": "thanks",
+    "patterns": ["thank you", "thanks"]
+    },
+    {"category": "bye",
     "patterns": ["goodbye!", "see you!", "bye", "goodnight"]
     }
 ]}

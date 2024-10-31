@@ -1,4 +1,4 @@
-from classpredictor import ClassPredictor
+from categorypredictor import CategoryPredictor
 from enum import Enum
 
 # context enum for varying the response based on the previous message
@@ -7,7 +7,7 @@ Context = Enum('Context', ['NONE','SOLODUO','REPHRASE'])
 class ResponseGenerator:
     
     def __init__(self):
-        self.predictor = ClassPredictor()
+        self.predictor = CategoryPredictor()
         self.soloduo = []  # solo or duo context
         self.context = [Context.NONE]  # general conversational context
         
@@ -51,11 +51,11 @@ class ResponseGenerator:
         Perform an action based on the recognized category.
         """
         self.context = [Context.NONE]    # any previous context becomes irrelevant
-        if category == self.predictor.classes.GREETINGS:
+        if category == self.predictor.categories.GREETINGS:
             return(self.greetings())
-        elif category == self.predictor.classes.SUMMARY:
+        elif category == self.predictor.categories.SUMMARY:
             return(self.summary())
-        elif category == self.predictor.classes.BYE:
+        elif category == self.predictor.categories.BYE:
             return(self.bye())
         else:  # REPERTOIRE, SONG_NAME, ARTIST_NAME or GENRE_NAME
             if not self.soloduo:

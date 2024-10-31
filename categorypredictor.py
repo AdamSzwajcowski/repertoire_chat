@@ -8,9 +8,9 @@ from nltk.stem import WordNetLemmatizer
 
 from tensorflow.keras.models import load_model
 
-class ClassPredictor:
+class CategoryPredictor:
     """
-    ClassPredictor handles loading and predicting classes based on a trained model.
+    CategoryPredictor handles loading and predicting categories based on a trained model.
     """
 
     def __init__(self):
@@ -19,8 +19,8 @@ class ClassPredictor:
         """        
         self.lemmatizer = WordNetLemmatizer()
         self.words = pickle.load(open('model/words.pkl', 'rb'))
-        self.classes = Enum("Classes",  # load classes into enum with uppercase
-            [tag.upper() for tag in pickle.load(open('model/classes.pkl', 'rb'))])
+        self.categories = Enum("Categories",  # load categories into enum with uppercase
+            [category.upper() for category in pickle.load(open('model/categories.pkl', 'rb'))])
         self.model = load_model('model/chatbot_model.keras')
         self.genres = ['pop','rock','jazz','film','polish','soul',
                        'musical','ballad', '70','80','90']
@@ -104,7 +104,7 @@ class ClassPredictor:
 
     def predict(self, sentence):
         """
-        Predict the class based on the sentence.
+        Predict the category based on the sentence.
         """
         sentence, proper_name = self.check_for_names(sentence)
         bag = self.bag_of_words(sentence)
@@ -112,4 +112,4 @@ class ClassPredictor:
         ind_max = np.argmax(results)
         probability = results[ind_max]
     
-        return self.classes(ind_max+1), probability, proper_name
+        return self.categories(ind_max+1), probability, proper_name
