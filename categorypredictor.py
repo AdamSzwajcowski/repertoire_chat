@@ -13,10 +13,7 @@ class CategoryPredictor:
     CategoryPredictor handles loading and predicting categories based on a trained model.
     """
 
-    def __init__(self):
-        """
-        Initialize the object    
-        """        
+    def __init__(self):   
         self.lemmatizer = WordNetLemmatizer()
         self.words = pickle.load(open('model/words.pkl', 'rb'))
         self.categories = Enum("Categories",  # load categories into enum with uppercase

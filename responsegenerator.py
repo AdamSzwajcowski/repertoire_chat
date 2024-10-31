@@ -5,6 +5,9 @@ from enum import Enum
 Context = Enum('Context', ['NONE','SOLODUO'])
 
 class ResponseGenerator:
+    """
+    ResponseGenerator handles the conversation based on the user's input.
+    """
     
     def __init__(self):
         self.predictor = CategoryPredictor()
@@ -82,7 +85,7 @@ class ResponseGenerator:
         Return a response based on the input sentence (prompt).
         """
         print(self.context)
-                    
+
         if self.context[0] == Context.NONE:
             self.check_soloduo(sentence)
             category, probability, proper_name = self.predictor.predict(sentence)
