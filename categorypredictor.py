@@ -8,6 +8,10 @@ from nltk.stem import WordNetLemmatizer
 
 from tensorflow.keras.models import load_model
 
+categorylist = ['GREETINGS','SUMMARY','REPERTOIRE','SONG_NAME','ARTIST_NAME',
+                'GENRE_NAME','THANKS','BYE']
+Categories = Enum("Categories", categorylist)
+
 class CategoryPredictor:
     """
     CategoryPredictor handles loading and predicting categories based on a trained model.
@@ -16,8 +20,6 @@ class CategoryPredictor:
     def __init__(self):   
         self.lemmatizer = WordNetLemmatizer()
         self.words = pickle.load(open('model/words.pkl', 'rb'))
-        self.categories = Enum("Categories",  # load categories into enum with uppercase
-            [category.upper() for category in pickle.load(open('model/categories.pkl', 'rb'))])
         self.model = load_model('model/chatbot_model.keras')
         self.genres = ['pop','rock','jazz','film','polish','soul',
                        'musical','ballad', '70','80','90']
@@ -109,4 +111,4 @@ class CategoryPredictor:
         ind_max = np.argmax(results)
         probability = results[ind_max]
     
-        return self.categories(ind_max+1), probability, proper_name
+        return Categories(ind_max+1), probability, proper_name

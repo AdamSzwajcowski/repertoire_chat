@@ -1,4 +1,5 @@
-from categorypredictor import CategoryPredictor
+from categorypredictor import CategoryPredictor, Categories
+from database import Database
 from enum import Enum
 
 # context enum for varying the response based on the previous message
@@ -11,6 +12,7 @@ class ResponseGenerator:
     
     def __init__(self):
         self.predictor = CategoryPredictor()
+        self.database = Database()
         self.soloduo = []  # solo or duo context
         self.context = [Context.NONE]  # general conversational context
         self.rephrase_counter = 0
@@ -44,19 +46,19 @@ class ResponseGenerator:
         self.rephrase_counter = 0
         self.context = [Context.NONE]    # any previous context becomes irrelevant
         
-        if category == self.predictor.categories.GREETINGS:
+        if category == Categories.GREETINGS:
             return('Hello! How can I help you?')
         
-        elif category == self.predictor.categories.SUMMARY:
+        elif category == Categories.SUMMARY:
             return(" ".join(["I play a wide variety of songs and pieces both solo, as a",
                     "fingerstyle guitarist, and in a duo with singers. This chatbot",
                     "is meant to help you navigate around my repertoire - you can",
                     "ask for a specific song, artist or genre."]))
         
-        elif category == self.predictor.categories.THANKS:
+        elif category == Categories.THANKS:
             return(("You're welcome! Is there anything else I can do for you?"))
         
-        elif category == self.predictor.categories.BYE:
+        elif category == Categories.BYE:
             return('Bye!')
         
         else:  # REPERTOIRE, SONG_NAME, ARTIST_NAME or GENRE_NAME
@@ -66,7 +68,7 @@ class ResponseGenerator:
                 self.context.append((category,proper_name))
                 return('Do you mean solo (fingerstyle) or in a duo?')
             else:
-                return("Here's the database output:")  # call do bazy danych
+                return(self.database.getData(category, proper_name, self.soloduo)) 
 
     def respond(self, sentence):
         """
@@ -107,6 +109,7 @@ class ResponseGenerator:
 # test
 if __name__ == "__main__":
     generator = ResponseGenerator()
+    print("The bot is running.")
     while True:
         print(generator.respond(input()))
     
