@@ -24,24 +24,6 @@ class ResponseGenerator:
             self.soloduo = 'solo'
         elif 'duo' in sentence:
             self.soloduo = 'duo'
-    
-    def ask_for_soloduo(self):
-        return('Do you mean solo (fingerstyle) or in a duo?')
-            
-    def greetings(self):
-        return('Hello! How can I help you?')
-               
-    def summary(self):
-        return(" ".join(["I play a wide variety of songs and pieces both solo, as a",
-                "fingerstyle guitarist, and in a duo with singers. This chatbot",
-                "is meant to help you navigate around my repertoire - you can",
-                "ask for a specific song, artist or genre."]))
-    
-    def thanks(self):
-        return("You're welcome! Is there anything else I can do for you?")
-    
-    def bye(self):
-        return('Bye!')
 
     def misunderstand(self):
         '''
@@ -53,9 +35,7 @@ class ResponseGenerator:
             self.rephrase_counter = 0
         else:
             return("I couldn't quite understand, could you rephrase?")
-            self.rephrase_counter += 1
-            
-        
+            self.rephrase_counter += 1                 
 
     def take_action(self, category, proper_name):
         """
@@ -63,20 +43,28 @@ class ResponseGenerator:
         """
         self.rephrase_counter = 0
         self.context = [Context.NONE]    # any previous context becomes irrelevant
+        
         if category == self.predictor.categories.GREETINGS:
-            return(self.greetings())
+            return('Hello! How can I help you?')
+        
         elif category == self.predictor.categories.SUMMARY:
-            return(self.summary())
+            return(" ".join(["I play a wide variety of songs and pieces both solo, as a",
+                    "fingerstyle guitarist, and in a duo with singers. This chatbot",
+                    "is meant to help you navigate around my repertoire - you can",
+                    "ask for a specific song, artist or genre."]))
+        
         elif category == self.predictor.categories.THANKS:
-            return(self.thanks())
+            return(("You're welcome! Is there anything else I can do for you?"))
+        
         elif category == self.predictor.categories.BYE:
-            return(self.bye())
+            return('Bye!')
+        
         else:  # REPERTOIRE, SONG_NAME, ARTIST_NAME or GENRE_NAME
             if not self.soloduo:
                 self.context = [Context.SOLODUO]
                 # append tuple with intended action to take once solo/duo is specified
                 self.context.append((category,proper_name))
-                return(self.ask_for_soloduo())
+                return('Do you mean solo (fingerstyle) or in a duo?')
             else:
                 return("Here's the database output:")  # call do bazy danych
 
