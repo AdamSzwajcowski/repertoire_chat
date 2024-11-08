@@ -14,8 +14,9 @@
     {"category": "artist_name",
     "patterns": ["do you play anything by artist_name?", "can you play something by artist_name?", "any songs by artist_name?", "do you have anything by artist_name"]
     },
-    {"category": "genre_name",
-    "patterns": ["do you play any genre_name", "do you have any genre_name songs in your repertoire?", "genre_name", "can you play some genre_name", "genre_name songs", "genre_name music"]
+    {"category": "tag_name",
+    "patterns": ["do you play any tag_name", "do you have any tag_name songs in your repertoire?", "tag_name", "can you play some tag_name", "tag_name songs", "tag_name music",
+                "do you play anything from tag_name", "any song from tag_name", "music from tag_name"]
     },
     {"category": "thanks",
     "patterns": ["thank you", "thanks"]

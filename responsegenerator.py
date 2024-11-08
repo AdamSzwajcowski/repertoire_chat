@@ -13,8 +13,8 @@ class ResponseGenerator:
     """
     
     def __init__(self):
-        self.predictor = CategoryPredictor()
         self.database = Database()
+        self.predictor = CategoryPredictor(self.database)     
         self.soloduo = []  # solo or duo context
         self.context = [Context.NONE]  # general conversational context
         self.rephrase_counter = 0

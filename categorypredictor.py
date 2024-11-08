@@ -15,12 +15,11 @@ class CategoryPredictor:
     CategoryPredictor handles loading and predicting categories based on a trained model.
     """
 
-    def __init__(self):   
+    def __init__(self, database):
         self.lemmatizer = WordNetLemmatizer()
         self.words = pickle.load(open('model/words.pkl', 'rb'))
         self.model = load_model('model/chatbot_model.keras')
-        self.genres = ['pop','rock','jazz','film','polish','soul',
-                       'musical','ballad', '70','80','90']
+        self.tags = database.list_tags()
 
     def check_for_song_name(self, sentence):
         """
@@ -50,14 +49,14 @@ class CategoryPredictor:
         
         return sentence, artist_name        
         
-    def check_for_genre_name(self, sentence):
+    def check_for_tags(self, sentence):
         """
-        Check if the sentence includes any genre names.
+        Check if the sentence includes any tags.
         """
-        for genre in self.genres:
-            if genre in sentence:
-                sentence = sentence.replace(genre, 'genre_name')
-                return sentence, genre
+        for tag in self.tags:
+            if tag in sentence:
+                sentence = sentence.replace(tag, 'tag_name')
+                return sentence, tag
         else:
             return sentence, []
 
@@ -74,8 +73,8 @@ class CategoryPredictor:
             if artist_name:
                 return sentence, artist_name
             else:
-                sentence, genre_name = self.check_for_genre_name(sentence)
-                return sentence, genre_name
+                sentence, tag_name = self.check_for_tags(sentence)
+                return sentence, tag_name
 
     def clean_up_sentence(self, sentence):
         """
