@@ -1,4 +1,6 @@
 from categories import Categories
+
+from rapidfuzz import fuzz
 import psycopg2
 
 class Database:
@@ -61,7 +63,31 @@ class Database:
             elif known_from:
                 output += (f'"{title}" from "{known_from}"\n')
         return output
-        
+          
+    def find_best_match(self, nametype, searched_name, soloduo):
+        """
+        Find the best matching title or artist to the requested name.
+        nametype: STRING, either 'title' or 'artist'
+        """
+        self.cur.execute(f'SELECT {nametype}, {nametype}_alternative FROM {soloduo}')
+        name_rows = self.cur.fetchall()
+        best_match = 0
+        best_name = ''
+        for main_name, name_alternative in name_rows:
+            names = [main_name] if main_name else []    # empty array if there is no main artist
+            if name_alternative:   
+                for n_a in name_alternative:  
+                    names.append(n_a)
+            for name in names:
+                name_match = fuzz.ratio(name.lower(), searched_name.lower())                    
+                if name_match > best_match:
+                    best_match = name_match
+                    best_name = main_name if nametype == 'title' else name    # return the default title but a specific artist
+            if best_match == 100:    # stop searching if perfect match found
+                break
+        return best_name, best_match
+            
+    
     def get_data(self, category, proper_name, soloduo):
         """
         Returns song from the database based on the information extracted
@@ -76,10 +102,17 @@ class Database:
 
                 
         elif category == Categories.SONG_NAME:
-            if soloduo == 'solo':
-                return(f"Yes, I have \"{proper_name}\" in my solo repertoire!")
+            title, match = self.find_best_match('title', proper_name, soloduo)
+            if match > 75:
+                self.cur.execute(f'SELECT artist, known_from FROM {soloduo} WHERE title = \'{title}\'')
+                artist, known_from = self.cur.fetchall()[0]
+                if artist:
+                    song = (f'"{title}" by {artist}')
+                elif known_from:
+                    song = (f'"{title}" from "{known_from}"')
+                return(f"Yes, I have {song} in my {soloduo} repertoire!")
             else:
-                return(f"Yes, I have \"{proper_name}\" in my duo repertoire!")
+                return("I'm afraid I don't have this song in my {soloduo} repertoire.")
                 
         elif category == Categories.ARTIST_NAME:
             if soloduo == 'solo':
@@ -96,4 +129,4 @@ class Database:
             
 if __name__ == '__main__':
     db = Database()
-    tags = db.list_tags()
+    best_name, best_match = db.find_best_match('title','What\'s Up','duo')
