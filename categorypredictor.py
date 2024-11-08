@@ -1,16 +1,14 @@
 import pickle
 import numpy as np
 import re
-from enum import Enum
+from categories import Categories
 
 import nltk
 from nltk.stem import WordNetLemmatizer
 
 from tensorflow.keras.models import load_model
 
-categorylist = ['GREETINGS','SUMMARY','REPERTOIRE','SONG_NAME','ARTIST_NAME',
-                'GENRE_NAME','THANKS','BYE']
-Categories = Enum("Categories", categorylist)
+
 
 class CategoryPredictor:
     """

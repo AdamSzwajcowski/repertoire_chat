@@ -1,4 +1,4 @@
-from categorypredictor import Categories
+from categories import Categories
 import psycopg2
 
 class Database:

@@ -1,6 +1,8 @@
-from categorypredictor import CategoryPredictor, Categories
+from categorypredictor import CategoryPredictor
 from database import Database
+from categories import Categories
 from enum import Enum
+
 
 # context enum for varying the response based on the previous message
 Context = Enum('Context', ['NONE','SOLODUO'])
