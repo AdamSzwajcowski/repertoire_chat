@@ -63,7 +63,7 @@ class ResponseGenerator:
         elif category == Categories.BYE:
             return('Bye!')
         
-        else:  # REPERTOIRE, SONG_NAME, ARTIST_NAME or GENRE_NAME
+        else:  # REPERTOIRE, SONG_NAME, ARTIST_NAME or TAG_NAME
             if not self.soloduo:
                 self.context = [Context.SOLODUO]
                 # append tuple with intended action to take once solo/duo is specified
@@ -113,5 +113,8 @@ if __name__ == "__main__":
     generator = ResponseGenerator()
     print("The bot is running.")
     while True:
-        print(generator.respond(input()))
+        output = generator.respond(input())
+        print(output)
+        if output == 'Bye!':
+            break
     
