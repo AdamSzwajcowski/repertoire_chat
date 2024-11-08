@@ -68,7 +68,7 @@ class ResponseGenerator:
                 self.context.append((category,proper_name))
                 return('Do you mean solo (fingerstyle) or in a duo?')
             else:
-                return(self.database.getData(category, proper_name, self.soloduo)) 
+                return(self.database.get_data(category, proper_name, self.soloduo)) 
 
     def respond(self, sentence):
         """
