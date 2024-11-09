@@ -1,6 +1,7 @@
 from categories import Categories
 
 from rapidfuzz import fuzz
+from nltk.util import ngrams
 import psycopg2
 
 class Database:
@@ -62,6 +63,8 @@ class Database:
                 output += (f'"{title}" by {artist}\n')
             elif known_from:
                 output += (f'"{title}" from "{known_from}"\n')
+        if output:
+            output = output[:-1] # remove '\n' from the last line
         return output
           
     def find_best_match(self, nametype, searched_name, soloduo):
@@ -82,11 +85,56 @@ class Database:
                 name_match = fuzz.ratio(name.lower(), searched_name.lower())                    
                 if name_match > best_match:
                     best_match = name_match
-                    best_name = main_name if nametype == 'title' else name    # return the default title but a specific artist
+                    best_name = name    # return the default title but a specific artist
             if best_match == 100:    # stop searching if perfect match found
                 break
         return best_name, best_match
+    
+    def find_songs_by_artist(self, artist, soloduo):
+        """
+        Return a list of songs by a given artist (including duos, covers, etc.).
+        """
+        self.cur.execute(f'SELECT id, artist, artist_alternative FROM {soloduo}')
+        artist_rows = self.cur.fetchall()
+        ids = []    # list of song IDs
+        for ID, main_artist, artist_alternative in artist_rows:
+            if main_artist == artist:
+                ids.append(ID)
+            elif artist_alternative:
+                for a_a in artist_alternative:
+                    if a_a == artist:
+                        ids.append(ID)
+                        break
+        return ids
+    
+    def ambiguous_search(self, sentence, soloduo):
+        """
+        Search through titles and artists to see if the sentence matches any of them.
+        """
+        # search through titles
+        title, match_title = self.find_best_match('title', sentence, soloduo)
+        # check if the found title is a subset of the sentence
+        sentence_ngrams = ngrams(sentence.split(),len(title.split()))
+        for ngram in sentence_ngrams:
+            match_title = max(fuzz.ratio(' '.join(list(ngram)), title), match_title)
             
+        # search through artists
+        artist, match_artist = self.find_best_match('artist', sentence, soloduo)
+        # check if the found artist is a subset of the sentence
+        sentence_ngrams = ngrams(sentence.split(),len(artist.split()))
+        for ngram in sentence_ngrams:
+            match_artist = max(fuzz.ratio(' '.join(list(ngram)), artist), match_artist)
+            
+        if match_title < 75 and match_artist < 75: # nothing found, call misunderstanding
+            category = []
+            proper_name = []
+        elif match_title > match_artist:
+            category = Categories.SONG_NAME
+            proper_name = title
+        else:
+            category = Categories.ARTIST_NAME
+            proper_name = artist
+        return category, proper_name        
     
     def get_data(self, category, proper_name, soloduo):
         """
@@ -96,16 +144,16 @@ class Database:
         
         if category == Categories.REPERTOIRE:
             self.cur.execute(f'SELECT title, artist, known_from FROM {soloduo}')
-            song_list = self.cur.fetchall()
-            song_list = self.format_repertoire(song_list)
+            song_list = self.format_songs(self.cur.fetchall())
             return(f"Here's my {soloduo} repertoire:\n" + song_list)
 
                 
         elif category == Categories.SONG_NAME:
             title, match = self.find_best_match('title', proper_name, soloduo)
             if match > 75:
-                self.cur.execute(f'SELECT artist, known_from FROM {soloduo} WHERE title = \'{title}\'')
-                artist, known_from = self.cur.fetchall()[0]
+                self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
+                                 WHERE title = \'{title}\' OR \'{title}\' = ANY(title_alternative)''')
+                title, artist, known_from = self.cur.fetchall()[0]  # overwrite title with the default one
                 if artist:
                     song = (f'"{title}" by {artist}')
                 elif known_from:
@@ -115,18 +163,24 @@ class Database:
                 return("I'm afraid I don't have this song in my {soloduo} repertoire.")
                 
         elif category == Categories.ARTIST_NAME:
-            if soloduo == 'solo':
-                return(f"Here are the songs by {proper_name} that I play solo:")
+            artist, match = self.find_best_match('artist', proper_name, soloduo)
+            if match > 75:
+                # if matching enough artist found, return their all songs from relevant repertoire
+                song_ids = self.find_songs_by_artist(artist, soloduo)
+                self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
+                                 WHERE id IN({', '.join(map(str, song_ids))})''')
+                song_list = self.format_songs(self.cur.fetchall())
+                return(f"Here are all the songs by {artist} from my {soloduo} repertoire:\n" + song_list)
             else:
-                return(f"Here are the songs by {proper_name} that I play in a duo:")
-            
+                return(f"I'm afraid I don't have any music by this artist in my {soloduo} repertoire.")        
+        
         elif category == Categories.TAG_NAME:
-            if soloduo == 'solo':
-                return(f"Here are the songs from my solo repertoire that are labeled as {proper_name}:")
-            else:
-                return(f"Here are the songs from my solo repertoire that are labeled as {proper_name}:")
+            self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
+                             WHERE '{proper_name}' ILIKE ANY(tags)''')
+            song_list = self.format_songs(self.cur.fetchall())                     
+            return(f"Here are the songs from my {soloduo} repertoire that are labeled as {proper_name}:\n" + song_list)
             
             
 if __name__ == '__main__':
     db = Database()
-    best_name, best_match = db.find_best_match('title','What\'s Up','duo')
+    print(db.ambiguous_search('any abba songs?', 'solo'))

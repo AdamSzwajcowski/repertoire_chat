@@ -54,8 +54,8 @@ class CategoryPredictor:
         Check if the sentence includes any tags.
         """
         for tag in self.tags:
-            if tag in sentence:
-                sentence = sentence.replace(tag, 'tag_name')
+            if tag.lower() in sentence.lower():
+                sentence = sentence.lower().replace(tag.lower(), 'tag_name')
                 return sentence, tag
         else:
             return sentence, []

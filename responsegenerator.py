@@ -38,8 +38,9 @@ class ResponseGenerator:
             self.context = [Context.NONE]
             self.rephrase_counter = 0
         else:
+            self.rephrase_counter += 1
             return("I couldn't quite understand, could you rephrase?")
-            self.rephrase_counter += 1                 
+              
 
     def take_action(self, category, proper_name):
         """
@@ -64,6 +65,10 @@ class ResponseGenerator:
             return('Bye!')
         
         else:  # REPERTOIRE, SONG_NAME, ARTIST_NAME or TAG_NAME
+            if category != Categories.REPERTOIRE and not proper_name:
+                # if there should be a proper name but there is none
+                print(1)
+                return(self.misunderstand())
             if not self.soloduo:
                 self.context = [Context.SOLODUO]
                 # append tuple with intended action to take once solo/duo is specified
@@ -84,12 +89,13 @@ class ResponseGenerator:
             print(category, probability)
             if probability > 0.95:   # understood with very good certainty
                 return(self.take_action(category, proper_name))
+            elif not self.soloduo:  # if prompt unclear and soloduo not specified yet
+                return(self.misunderstand())
             else:
-                #przeszukaj_baze # przeszukiwanie baz
-                if False:   # if znalezione
-                    return(1)
-                elif probability > 0.8: # less certain, but still quite probable
-                    return(self.take_action(category, proper_name))               
+                # perform ambiguous search to see if the sentence matches any titles or artists
+                category, proper_name_ = self.database.ambiguous_search(sentence, self.soloduo)
+                if category:    # if found anything relevant
+                    return(self.take_action(category, proper_name))            
                 else:
                     return(self.misunderstand())
                 
