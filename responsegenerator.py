@@ -5,7 +5,7 @@ from enum import Enum
 
 
 # context enum for varying the response based on the previous message
-Context = Enum('Context', ['NONE','SOLODUO'])
+Context = Enum('Context', ['NONE','SOLODUO','SEARCH'])
 
 class ResponseGenerator:
     """
@@ -22,24 +22,54 @@ class ResponseGenerator:
         
     def check_soloduo(self, sentence):
         """
-        Check whether the context of solo/duo repertoire has changed.
+        Check the current context of solo/duo repertoire and return True if it has changed.
         """
-        if 'solo' in sentence or 'fingerstyle' in sentence:
+        soloduo_prev = self.soloduo
+        if 'solo' in sentence.lower() or 'fingerstyle' in sentence.lower():
             self.soloduo = 'solo'
-        elif 'duo' in sentence:
+        elif 'duo' in sentence.lower():
             self.soloduo = 'duo'
+        return self.soloduo != soloduo_prev
 
     def misunderstand(self):
-        '''
+        """
         Punt if there are two misunderstandings in a row. Otherwise, ask for rephrasing.
-        '''
+        """
         if self.rephrase_counter:
-            return("I'm afraid I can't help you with that. Can I do anything else for you?")
+            # reset the conversation
             self.context = [Context.NONE]
+            self.soloduo = []
             self.rephrase_counter = 0
+            return("I'm afraid I can't help you with that. Can I do anything else for you?")
         else:
+            # maintain the context
             self.rephrase_counter += 1
             return("I couldn't quite understand, could you rephrase?")
+        
+    def ambiguous_search(self, sentence):
+        """
+        Call the database to check if the sentence resembles any title or artist.
+        Used when the sentence doesn't conform to any category according to the model.
+        """
+        if self.soloduo:
+            # perform ambiguous search to see if the sentence matches any titles or artists
+            category, proper_name = self.database.ambiguous_search(sentence, self.soloduo)
+            if category:    # if found anything relevant
+                return(self.take_action(category, proper_name))            
+            else:
+                return(self.misunderstand())
+        else:  # if soloduo not specified yet, search both (solo prioritized)
+             category, proper_name = self.database.ambiguous_search(sentence, 'solo')
+             if category:    # if found anything relevant
+                 self.soloduo = 'solo'
+                 return(self.take_action(category, proper_name))
+             else:
+                 category, proper_name = self.database.ambiguous_search(sentence, 'duo')
+                 if category:    # if found anything relevant
+                     self.soloduo = 'duo'
+                     return(self.take_action(category, proper_name))            
+                 else:
+                     return(self.misunderstand())
               
 
     def take_action(self, category, proper_name):
@@ -67,7 +97,6 @@ class ResponseGenerator:
         else:  # REPERTOIRE, SONG_NAME, ARTIST_NAME or TAG_NAME
             if category != Categories.REPERTOIRE and not proper_name:
                 # if there should be a proper name but there is none
-                print(1)
                 return(self.misunderstand())
             if not self.soloduo:
                 self.context = [Context.SOLODUO]
@@ -75,6 +104,8 @@ class ResponseGenerator:
                 self.context.append((category,proper_name))
                 return('Do you mean solo (fingerstyle) or in a duo?')
             else:
+                self.context = [Context.SEARCH]
+                self.context.append((category, proper_name))
                 return(self.database.get_data(category, proper_name, self.soloduo)) 
 
     def respond(self, sentence):
@@ -89,30 +120,36 @@ class ResponseGenerator:
             print(category, probability)
             if probability > 0.95:   # understood with very good certainty
                 return(self.take_action(category, proper_name))
-            elif not self.soloduo:  # if prompt unclear and soloduo not specified yet
-                return(self.misunderstand())
             else:
-                # perform ambiguous search to see if the sentence matches any titles or artists
-                category, proper_name_ = self.database.ambiguous_search(sentence, self.soloduo)
-                if category:    # if found anything relevant
-                    return(self.take_action(category, proper_name))            
-                else:
-                    return(self.misunderstand())
-                
+                return(self.ambiguous_search(sentence))
+            
         elif self.context[0] == Context.SOLODUO:              
-            self.check_soloduo(sentence)               
+            soloduo_changed = self.check_soloduo(sentence)               
             # check if some other request was made despite only asking for clarification
             category, probability, proper_name = self.predictor.predict(sentence)
             print(category, probability)
             if probability > 0.95:                   
                 return(self.take_action(category, proper_name))                     
-            elif not self.soloduo:   # if the user still hasn't specified solo/duo
-                return(self.misunderstand())
-            else:   # if the user simply provided solo/duo
+            elif soloduo_changed:
                 # come back to the previously saved request
                 category, proper_name = self.context[1]
                 return(self.take_action(category, proper_name))
-                
+            else:   # if the user still hasn't specified solo/duo
+                return(self.ambiguous_search(sentence))
+            
+        elif self.context[0] == Context.SEARCH:
+            soloduo_changed = self.check_soloduo(sentence)               
+            category, probability, proper_name = self.predictor.predict(sentence)
+            print(category, probability)
+            if probability > 0.95:                   
+                return(self.take_action(category, proper_name))                     
+            elif soloduo_changed:
+                # perform the same search but with changed soloduo
+                category, proper_name = self.context[1]
+                return(self.take_action(category, proper_name))
+            else:
+                return(self.ambiguous_search(sentence))
+                          
 
 # test
 if __name__ == "__main__":
@@ -123,4 +160,3 @@ if __name__ == "__main__":
         print(output)
         if output == 'Bye!':
             break
-    

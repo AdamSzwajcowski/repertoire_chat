@@ -67,28 +67,39 @@ class Database:
             output = output[:-1] # remove '\n' from the last line
         return output
           
-    def find_best_match(self, nametype, searched_name, soloduo):
+    def find_best_match(self, nametype, searched_name, soloduo, truncate=False):
         """
-        Find the best matching title or artist to the requested name.
-        nametype: STRING, either 'title' or 'artist'
+        Find the best matching artist or title to the requested one.
+        NAMETYPE: STR, either 'title' or 'artist'
+        TRUNCATE: BOOL, determines whether or not the searched name should be truncated to
+        the length of the compared name. Set true for general artist search to counteract
+        the simplistic NLP rule of detecting the artist name being prone to overfetching.
         """
+        def update_best_match(name, searched_name, best_match, best_name):
+            """
+            Check name match and update if it is the best one yet.
+            """
+            if truncate:
+                searched_name = searched_name[:len(name)]
+            name_match = fuzz.ratio(name.lower(), searched_name.lower())                    
+            if name_match > best_match:
+                best_match, best_name = name_match, name
+            return best_match, best_name
+                
         self.cur.execute(f'SELECT {nametype}, {nametype}_alternative FROM {soloduo}')
         name_rows = self.cur.fetchall()
         best_match = 0
         best_name = ''
         for main_name, name_alternative in name_rows:
-            names = [main_name] if main_name else []    # empty array if there is no main artist
+            if main_name:
+                best_match, best_name = update_best_match(main_name, searched_name, best_match, best_name)                  
+                if best_match == 100: break    # stop searching if perfect match found
             if name_alternative:   
-                for n_a in name_alternative:  
-                    names.append(n_a)
-            for name in names:
-                name_match = fuzz.ratio(name.lower(), searched_name.lower())                    
-                if name_match > best_match:
-                    best_match = name_match
-                    best_name = name    # return the default title but a specific artist
-            if best_match == 100:    # stop searching if perfect match found
-                break
+                for name in name_alternative:
+                    best_match, best_name = update_best_match(name, searched_name, best_match, best_name)    
+                    if best_match == 100: break    # stop searching if perfect match found
         return best_name, best_match
+    
     
     def find_songs_by_artist(self, artist, soloduo):
         """
@@ -116,14 +127,14 @@ class Database:
         # check if the found title is a subset of the sentence
         sentence_ngrams = ngrams(sentence.split(),len(title.split()))
         for ngram in sentence_ngrams:
-            match_title = max(fuzz.ratio(' '.join(list(ngram)), title), match_title)
+            match_title = max(fuzz.ratio(' '.join(list(ngram)), title.lower()), match_title)
             
         # search through artists
         artist, match_artist = self.find_best_match('artist', sentence, soloduo)
         # check if the found artist is a subset of the sentence
         sentence_ngrams = ngrams(sentence.split(),len(artist.split()))
         for ngram in sentence_ngrams:
-            match_artist = max(fuzz.ratio(' '.join(list(ngram)), artist), match_artist)
+            match_artist = max(fuzz.ratio(' '.join(list(ngram)), artist.lower()), match_artist)
             
         if match_title < 75 and match_artist < 75: # nothing found, call misunderstanding
             category = []
@@ -160,10 +171,10 @@ class Database:
                     song = (f'"{title}" from "{known_from}"')
                 return(f"Yes, I have {song} in my {soloduo} repertoire!")
             else:
-                return("I'm afraid I don't have this song in my {soloduo} repertoire.")
+                return(f"I'm afraid I don't have this song in my {soloduo} repertoire.")
                 
         elif category == Categories.ARTIST_NAME:
-            artist, match = self.find_best_match('artist', proper_name, soloduo)
+            artist, match = self.find_best_match('artist', proper_name, soloduo, True)
             if match > 75:
                 # if matching enough artist found, return their all songs from relevant repertoire
                 song_ids = self.find_songs_by_artist(artist, soloduo)
@@ -183,4 +194,4 @@ class Database:
             
 if __name__ == '__main__':
     db = Database()
-    print(db.ambiguous_search('any abba songs?', 'solo'))
+    print(db.find_best_match('artist', 'krzys krawczyk in your solo repertoire?', 'solo'))
