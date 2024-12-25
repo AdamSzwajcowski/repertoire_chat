@@ -67,7 +67,7 @@ class Database:
             output = output[:-1] # remove '\n' from the last line
         return output
           
-    def find_best_match(self, nametype, searched_name, soloduo, truncate=False):
+    def find_best_match(self, nametype, searched_name, soloduo, singer, truncate=False):
         """
         Find the best matching artist or title to the requested one.
         NAMETYPE: STR, either 'title' or 'artist'
@@ -85,8 +85,11 @@ class Database:
             if name_match > best_match:
                 best_match, best_name = name_match, name
             return best_match, best_name
-                
-        self.cur.execute(f'SELECT {nametype}, {nametype}_alternative FROM {soloduo}')
+        if singer:  
+            self.cur.execute(f'SELECT {nametype}, {nametype}_alternative FROM {soloduo} '
+                             f'WHERE {singer} IS NOT NULL')
+        else:
+            self.cur.execute(f'SELECT {nametype}, {nametype}_alternative FROM {soloduo}')
         name_rows = self.cur.fetchall()
         best_match = 0
         best_name = ''
@@ -101,11 +104,15 @@ class Database:
         return best_name, best_match
     
     
-    def find_songs_by_artist(self, artist, soloduo):
+    def find_songs_by_artist(self, artist, soloduo, singer):
         """
         Return a list of songs by a given artist (including duos, covers, etc.).
         """
-        self.cur.execute(f'SELECT id, artist, artist_alternative FROM {soloduo}')
+        if singer:
+            self.cur.execute(f'SELECT id, artist, artist_alternative FROM {soloduo} '
+                             f'WHERE {singer} IS NOT NULL')
+        else:
+            self.cur.execute(f'SELECT id, artist, artist_alternative FROM {soloduo}')
         artist_rows = self.cur.fetchall()
         ids = []    # list of song IDs
         for ID, main_artist, artist_alternative in artist_rows:
@@ -118,19 +125,19 @@ class Database:
                         break
         return ids
     
-    def ambiguous_search(self, sentence, soloduo):
+    def ambiguous_search(self, sentence, soloduo, singer):
         """
         Search through titles and artists to see if the sentence matches any of them.
         """
         # search through titles
-        title, match_title = self.find_best_match('title', sentence, soloduo)
+        title, match_title = self.find_best_match('title', sentence, soloduo, singer)
         # check if the found title is a subset of the sentence
         sentence_ngrams = ngrams(sentence.split(),len(title.split()))
         for ngram in sentence_ngrams:
             match_title = max(fuzz.ratio(' '.join(list(ngram)), title.lower()), match_title)
             
         # search through artists
-        artist, match_artist = self.find_best_match('artist', sentence, soloduo)
+        artist, match_artist = self.find_best_match('artist', sentence, soloduo, singer)
         # check if the found artist is a subset of the sentence
         sentence_ngrams = ngrams(sentence.split(),len(artist.split()))
         for ngram in sentence_ngrams:
@@ -147,51 +154,87 @@ class Database:
             proper_name = artist
         return category, proper_name        
     
-    def get_data(self, category, proper_name, soloduo):
+    def get_response(self, category, proper_name, soloduo, singer):
         """
-        Returns song from the database based on the information extracted
+        Returns information from the database based on the information extracted
         from the prompt.
         """
         
         if category == Categories.REPERTOIRE:
-            self.cur.execute(f'SELECT title, artist, known_from FROM {soloduo}')
-            song_list = self.format_songs(self.cur.fetchall())
-            return(f"Here's my {soloduo} repertoire:\n" + song_list)
+            
+            if singer:
+                self.cur.execute(f"SELECT title, artist, known_from FROM {soloduo} "
+                                 f"WHERE {singer} IS NOT NULL")
+                song_list = self.format_songs(self.cur.fetchall())
+                return(f"Here's my repertoire with {singer.capitalize()}:\n" + song_list)
+            else:
+                self.cur.execute(f"SELECT title, artist, known_from FROM {soloduo}")
+                song_list = self.format_songs(self.cur.fetchall())
+                return(f"Here's my {soloduo} repertoire:\n" + song_list)
 
                 
         elif category == Categories.SONG_NAME:
-            title, match = self.find_best_match('title', proper_name, soloduo)
+            title, match = self.find_best_match('title', proper_name, soloduo, singer)
+            title = title.replace("'", "''") # double the apostrophes for SQL query
             if match > 75:
-                self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
-                                 WHERE title = \'{title}\' OR \'{title}\' = ANY(title_alternative)''')
+                if singer:
+                    self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
+                                     WHERE (title = \'{title}\' OR \'{title}\' = ANY(title_alternative))
+                                     AND {singer} IS NOT NULL''')    
+                else:
+                    self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
+                                     WHERE title = \'{title}\' OR \'{title}\' = ANY(title_alternative)''')
                 title, artist, known_from = self.cur.fetchall()[0]  # overwrite title with the default one
                 if artist:
                     song = (f'"{title}" by {artist}')
                 elif known_from:
                     song = (f'"{title}" from "{known_from}"')
-                return(f"Yes, I have {song} in my {soloduo} repertoire!")
+                    
+                if singer:
+                    return(f"Yes, I play this song with {singer.capitalize()}!")
+                else:                        
+                    return(f"Yes, I have {song} in my {soloduo} repertoire!")
+                
             else:
-                return(f"I'm afraid I don't have this song in my {soloduo} repertoire.")
+                if singer:
+                    return(f"I'm afraid I don't play this song with {singer.capitalize()}.")
+                else:
+                    return(f"I'm afraid I don't have this song in my {soloduo} repertoire.")
                 
         elif category == Categories.ARTIST_NAME:
-            artist, match = self.find_best_match('artist', proper_name, soloduo, True)
+            artist, match = self.find_best_match('artist', proper_name, soloduo, singer, True)
+            artist = artist.replace("'", "''") # double the apostrophes for SQL query
             if match > 75:
                 # if matching enough artist found, return their all songs from relevant repertoire
-                song_ids = self.find_songs_by_artist(artist, soloduo)
+                song_ids = self.find_songs_by_artist(artist, soloduo, singer)
                 self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
                                  WHERE id IN({', '.join(map(str, song_ids))})''')
                 song_list = self.format_songs(self.cur.fetchall())
-                return(f"Here are all the songs by {artist} from my {soloduo} repertoire:\n" + song_list)
+                if singer:
+                    return(f"Here are all the songs by {artist} from my repertoire "
+                           f"with {singer.capitalize()}:\n" + song_list)
+                else:
+                    return(f"Here are all the songs by {artist} from my {soloduo} "
+                           f"repertoire:\n" + song_list)
+                
             else:
-                return(f"I'm afraid I don't have any music by this artist in my {soloduo} repertoire.")        
+                if singer:
+                    return(f"I'm afraid I don't have any music by this artist in my "
+                           f"repertoire with {singer.capitalize()}.")         
+                else:
+                    return(f"I'm afraid I don't have any music by this artist in my "
+                           f"{soloduo} repertoire.")        
         
         elif category == Categories.TAG_NAME:
-            self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
-                             WHERE '{proper_name}' ILIKE ANY(tags)''')
-            song_list = self.format_songs(self.cur.fetchall())                     
-            return(f"Here are the songs from my {soloduo} repertoire that are labeled as {proper_name}:\n" + song_list)
-            
-            
-if __name__ == '__main__':
-    db = Database()
-    print(db.find_best_match('artist', 'krzys krawczyk in your solo repertoire?', 'solo'))
+            if singer:
+                self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
+                                 WHERE '{proper_name}' ILIKE ANY(tags)
+                                 AND {singer} IS NOT NULL''') 
+                song_list = self.format_songs(self.cur.fetchall())
+                return(f"Here are the songs from my repertoire with {singer.capitalize()} "
+                        "that are labeled as {proper_name}:\n" + song_list)
+            else:
+                self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
+                                 WHERE '{proper_name}' ILIKE ANY(tags)''')
+                song_list = self.format_songs(self.cur.fetchall())                         
+                return(f"Here are the songs from my {soloduo} repertoire that are labeled as {proper_name}:\n" + song_list)

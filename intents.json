@@ -2,11 +2,8 @@
     {"category": "greetings",
     "patterns": ["hello", "hey", "hi", "good morning", "good afternoon", "what's up", "hi there"]
     },
-    {"category": "summary",
-    "patterns": ["what do you play?", "what can you play?", "tell me what you play", "tell me something about yourself"]
-    },
     {"category": "repertoire",
-    "patterns": ["what is your repertoire?", "which songs do you play?", "repertoire", "tell me your repertoire"]
+    "patterns": ["what is your repertoire?", "what can you play", "which songs do you play?", "repertoire", "tell me your repertoire"]
     },
     {"category": "song_name",
     "patterns": ["song_name", "can you play song_name?", "do you play song_name?", "do you have song_name in your repertoire?"]

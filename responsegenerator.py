@@ -15,21 +15,36 @@ class ResponseGenerator:
     def __init__(self):
         self.database = Database()
         self.predictor = CategoryPredictor(self.database)     
-        self.soloduo = []  # solo or duo context
+        self.soloduo = []  # type of repertoire context
+        self.singer = []   # singer context
         self.context = [Context.NONE]  # general conversational context
         self.rephrase_counter = 0
         
         
-    def check_soloduo(self, sentence):
+    def check_repertoire_context(self, sentence):
         """
         Check the current context of solo/duo repertoire and return True if it has changed.
         """
+        # save previous values to check if they changed
         soloduo_prev = self.soloduo
-        if 'solo' in sentence.lower() or 'fingerstyle' in sentence.lower():
+        singer_prev = self.singer
+        sentence = sentence.lower()
+        if 'solo' in sentence or 'fingerstyle' in sentence:
             self.soloduo = 'solo'
-        elif 'duo' in sentence.lower():
+            self.singer = []
+        elif 'dominika' in sentence:
             self.soloduo = 'duo'
-        return self.soloduo != soloduo_prev
+            self.singer = 'dominika'
+        elif 'sara' in sentence or 'salia' in sentence:
+            self.soloduo = 'duo'
+            self.singer = 'sara'
+        elif 'ania' in sentence or 'anna' in sentence:
+            self.soloduo = 'duo'
+            self.singer = 'ania'
+        elif 'duo' in sentence or 'singer' in sentence:
+            self.soloduo = 'duo'
+            self.singer = []
+        return (self.soloduo != soloduo_prev) or (self.singer != singer_prev)
 
     def misunderstand(self):
         """
@@ -39,6 +54,7 @@ class ResponseGenerator:
             # reset the conversation
             self.context = [Context.NONE]
             self.soloduo = []
+            self.singer = []
             self.rephrase_counter = 0
             return("I'm afraid I can't help you with that. Can I do anything else for you?")
         else:
@@ -53,18 +69,18 @@ class ResponseGenerator:
         """
         if self.soloduo:
             # perform ambiguous search to see if the sentence matches any titles or artists
-            category, proper_name = self.database.ambiguous_search(sentence, self.soloduo)
+            category, proper_name = self.database.ambiguous_search(sentence, self.soloduo, self.singer)
             if category:    # if found anything relevant
                 return(self.take_action(category, proper_name))            
             else:
                 return(self.misunderstand())
         else:  # if soloduo not specified yet, search both (solo prioritized)
-             category, proper_name = self.database.ambiguous_search(sentence, 'solo')
+             category, proper_name = self.database.ambiguous_search(sentence, 'solo', [])
              if category:    # if found anything relevant
                  self.soloduo = 'solo'
                  return(self.take_action(category, proper_name))
              else:
-                 category, proper_name = self.database.ambiguous_search(sentence, 'duo')
+                 category, proper_name = self.database.ambiguous_search(sentence, 'duo', [])
                  if category:    # if found anything relevant
                      self.soloduo = 'duo'
                      return(self.take_action(category, proper_name))            
@@ -81,12 +97,6 @@ class ResponseGenerator:
         
         if category == Categories.GREETINGS:
             return('Hello! How can I help you?')
-        
-        elif category == Categories.SUMMARY:
-            return(" ".join(["I play a wide variety of songs and pieces both solo, as a",
-                    "fingerstyle guitarist, and in a duo with singers. This chatbot",
-                    "is meant to help you navigate around my repertoire - you can",
-                    "ask for a specific song, artist or genre."]))
         
         elif category == Categories.THANKS:
             return(("You're welcome! Is there anything else I can do for you?"))
@@ -106,7 +116,7 @@ class ResponseGenerator:
             else:
                 self.context = [Context.SEARCH]
                 self.context.append((category, proper_name))
-                return(self.database.get_data(category, proper_name, self.soloduo)) 
+                return(self.database.get_response(category, proper_name, self.soloduo, self.singer)) 
 
     def respond(self, sentence):
         """
@@ -115,7 +125,7 @@ class ResponseGenerator:
         print(self.context)
 
         if self.context[0] == Context.NONE:
-            self.check_soloduo(sentence)
+            self.check_repertoire_context(sentence)
             category, probability, proper_name = self.predictor.predict(sentence)
             print(category, probability)
             if probability > 0.95:   # understood with very good certainty
@@ -123,28 +133,28 @@ class ResponseGenerator:
             else:
                 return(self.ambiguous_search(sentence))
             
-        elif self.context[0] == Context.SOLODUO:              
-            soloduo_changed = self.check_soloduo(sentence)               
+        elif self.context[0] == Context.SOLODUO:            
+            repertoire_context_changed = self.check_repertoire_context(sentence) 
             # check if some other request was made despite only asking for clarification
             category, probability, proper_name = self.predictor.predict(sentence)
             print(category, probability)
             if probability > 0.95:                   
                 return(self.take_action(category, proper_name))                     
-            elif soloduo_changed:
+            elif repertoire_context_changed:
                 # come back to the previously saved request
                 category, proper_name = self.context[1]
                 return(self.take_action(category, proper_name))
             else:   # if the user still hasn't specified solo/duo
                 return(self.ambiguous_search(sentence))
             
-        elif self.context[0] == Context.SEARCH:
-            soloduo_changed = self.check_soloduo(sentence)               
+        elif self.context[0] == Context.SEARCH: 
+            repertoire_context_changed = self.check_repertoire_context(sentence) 
             category, probability, proper_name = self.predictor.predict(sentence)
             print(category, probability)
             if probability > 0.95:                   
                 return(self.take_action(category, proper_name))                     
-            elif soloduo_changed:
-                # perform the same search but with changed soloduo
+            elif repertoire_context_changed:   # if context changed
+                # perform the same search but with changed repertoire context
                 category, proper_name = self.context[1]
                 return(self.take_action(category, proper_name))
             else:
