@@ -19,6 +19,7 @@ class ResponseGenerator:
         self.singer = []   # singer context
         self.context = [Context.NONE]  # general conversational context
         self.rephrase_counter = 0
+        self.last_activity = 0
         
         
     def check_repertoire_context(self, sentence):

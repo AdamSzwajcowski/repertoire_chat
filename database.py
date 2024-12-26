@@ -232,7 +232,7 @@ class Database:
                                  AND {singer} IS NOT NULL''') 
                 song_list = self.format_songs(self.cur.fetchall())
                 return(f"Here are the songs from my repertoire with {singer.capitalize()} "
-                        "that are labeled as {proper_name}:\n" + song_list)
+                       f"that are labeled as {proper_name}:\n" + song_list)
             else:
                 self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
                                  WHERE '{proper_name}' ILIKE ANY(tags)''')
