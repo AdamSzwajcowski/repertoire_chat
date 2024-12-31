@@ -18,7 +18,7 @@ class Database:
                 dbname="Repertoire",
                 user="adam",
                 password="adam1234",
-                host="localhost",
+                host="db",       # "localhost" for local uses
                 port="5432")
             self.cur = self.conn.cursor()
         except Exception as e:

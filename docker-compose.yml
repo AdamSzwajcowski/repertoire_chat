@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: adam
+      POSTGRES_PASSWORD: adam1234
+      POSTGRES_DB: Repertoire
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/Repertoire.sql:/docker-entrypoint-initdb.d/Repertoire.sql
+
+    ports:
+      - "5433:5432"
+
+volumes:
+  pgdata:

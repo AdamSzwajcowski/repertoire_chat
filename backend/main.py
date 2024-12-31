@@ -11,6 +11,10 @@ app = FastAPI()
 user_sessions = {}
 SESSION_TIMEOUT = 600   # 10 minutes
 
+@app.get("/")
+async def read_root():
+    return {"message": "Root defined."}
+
 @app.post("/generate-response/")
 async def generate_response(user_input: UserInput, request: Request):
     

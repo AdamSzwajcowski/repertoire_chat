@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # Set the API URL
-API_URL = "http://localhost:8000/generate-response/"
+API_URL = "http://backend:80/generate-response/"
 
 # Configure the page layout
 st.set_page_config(page_title="Chatbot Interface", layout="wide")
