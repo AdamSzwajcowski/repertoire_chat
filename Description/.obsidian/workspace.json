@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Project description.md",
+                "file": "Repertoire chatbot.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Project description"
+              "title": "Repertoire chatbot"
             }
           }
         ]
@@ -93,7 +93,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Project description.md",
+                "file": "Repertoire chatbot.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +103,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Project description"
+              "title": "Backlinks for Repertoire chatbot"
             }
           },
           {
@@ -112,12 +112,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Project description.md",
+                "file": "Repertoire chatbot.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Project description"
+              "title": "Outgoing links from Repertoire chatbot"
             }
           },
           {
@@ -139,10 +139,10 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Project description.md"
+                "file": "Repertoire chatbot.md"
               },
               "icon": "lucide-list",
-              "title": "Outline of Project description"
+              "title": "Outline of Repertoire chatbot"
             }
           }
         ]
@@ -164,6 +164,7 @@
   },
   "active": "30dc6fb6fc136f69",
   "lastOpenFiles": [
-    "Project description.md"
+    "Untitled.md",
+    "Repertoire chatbot.md"
   ]
 }

@@ -80,7 +80,7 @@ class Database:
             Check name match and update if it is the best one yet.
             """
             if truncate:
-                searched_name = searched_name[:len(name)]
+                searched_name = searched_name[:min(len(name), len(searched_name))]
             name_match = fuzz.ratio(name.lower(), searched_name.lower())                    
             if name_match > best_match:
                 best_match, best_name = name_match, name

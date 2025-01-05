@@ -5,7 +5,7 @@ from enum import Enum
 
 
 # context enum for varying the response based on the previous message
-Context = Enum('Context', ['NONE','SOLODUO','SEARCH'])
+Context = Enum('Context', ['NONE','SEARCH'])
 
 class ResponseGenerator:
     """
@@ -110,7 +110,8 @@ class ResponseGenerator:
                 # if there should be a proper name but there is none
                 return(self.misunderstand())
             if not self.soloduo:
-                self.context = [Context.SOLODUO]
+                # if soloduo not yet specified
+                self.context = [Context.SEARCH]
                 # append tuple with intended action to take once solo/duo is specified
                 self.context.append((category,proper_name))
                 return('Do you mean solo (fingerstyle) or in a duo?')
@@ -132,20 +133,6 @@ class ResponseGenerator:
             if probability > 0.95:   # understood with very good certainty
                 return(self.take_action(category, proper_name))
             else:
-                return(self.ambiguous_search(sentence))
-            
-        elif self.context[0] == Context.SOLODUO:            
-            repertoire_context_changed = self.check_repertoire_context(sentence) 
-            # check if some other request was made despite only asking for clarification
-            category, probability, proper_name = self.predictor.predict(sentence)
-            print(category, probability)
-            if probability > 0.95:                   
-                return(self.take_action(category, proper_name))                     
-            elif repertoire_context_changed:
-                # come back to the previously saved request
-                category, proper_name = self.context[1]
-                return(self.take_action(category, proper_name))
-            else:   # if the user still hasn't specified solo/duo
                 return(self.ambiguous_search(sentence))
             
         elif self.context[0] == Context.SEARCH: 
