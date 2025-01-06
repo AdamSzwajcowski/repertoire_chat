@@ -15,6 +15,8 @@ info_text = """
 I play a wide variety of songs and pieces both solo, as a fingerstyle guitarist, and in a duo with singers (Dominika, Sara, and Ania). 
 This chatbot is meant to help you navigate around my repertoire - you can ask for a specific song, artist, or genre, or request the entire repertoire - 
 all of that either solo or as a duo (in general or with a specific singer). Song titles are more likely to be properly detected when put in quotation marks, e.g. "Yesterday".
+
+For more details on the chatbot's features and implementation, please see the [Github repository](https://github.com/AdamSzwajcowski/repertoire_chat).
 """
 
 # Display the information text
