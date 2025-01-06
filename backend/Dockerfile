@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9
+FROM python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
@@ -10,14 +10,8 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Set the NLTK data directory
-ENV NLTK_DATA=/usr/local/nltk_data
-
-# Download NLTK data
-RUN python -m nltk.downloader -d /usr/local/nltk_data punkt_tab
-RUN python -m nltk.downloader -d /usr/local/nltk_data punkt
-RUN python -m nltk.downloader -d /usr/local/nltk_data wordnet
-RUN python -m nltk.downloader -d /usr/local/nltk_data omw-1.4
+# Set the NLTK data directory and download all required NLTK data in one command
+RUN python -m nltk.downloader -d /usr/local/nltk_data punkt punkt_tab wordnet omw-1.4
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
