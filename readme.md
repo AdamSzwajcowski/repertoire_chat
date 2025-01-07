@@ -1,5 +1,5 @@
 # 1. Project Overview
-The goal of the presented chatbot is to help navigate around my repertoire stored in a Postgres database. The chatbot itself is a simple app using mostly two approaches to gather the user's intent - keyword detection and neural network (NN) based on a bag-of-words model. The chatbot is available on {URL}.
+The goal of the presented chatbot is to help navigate around my repertoire stored in a Postgres database. The chatbot itself is a simple app using mostly two approaches to gather the user's intent - keyword detection and neural network (NN) based on a bag-of-words model. The chatbot is available [here]{http://54.87.244.24:8501/}.
 # 2. Project Objective
 While the chatbot is somewhat useful to me, it was created mostly as a portfolio project, aiming to present my programming abilities and fill some gaps in my technology stack. Since I'm not particularly interested in the frontend, I delegated it to ChatGPT - the UI is by no means perfect, but it is enough to effectively demonstrate how the chatbot works. For backend, I also used ChatGPT extensively, but only as a partner to discuss pros and cons of various approaches to the application design.
 # 3. File Description
