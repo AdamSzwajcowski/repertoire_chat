@@ -109,21 +109,24 @@ with st.form(key="chat_form", clear_on_submit=True):
         submit_button = st.form_submit_button(label="Send")
     
 
+# Initialize the session object only once
+if 'session' not in st.session_state:
+    st.session_state.session = requests.Session()
 
 # Handle form submission
 if submit_button and user_input.strip():
     # Append user message to the conversation history
     st.session_state.messages.append({"sender": "You", "message": user_input.strip()})
-    
+
     try:
-        # Send a POST request to the FastAPI endpoint with the user input
-        response = requests.post(API_URL, json={"sentence": user_input.strip()})
-        
+        # Use the persistent session object for the POST request
+        response = st.session_state.session.post(API_URL, json={"sentence": user_input.strip()})
+
         # Check if the request was successful
         if response.status_code == 200:
             # Extract the chatbot's response from the JSON data
             bot_response = response.json().get("response", "No response received.")
-            
+
             # Append bot response to the conversation history
             st.session_state.messages.append({"sender": "Bot", "message": bot_response})
         else:
@@ -138,7 +141,7 @@ if submit_button and user_input.strip():
             "sender": "Error",
             "message": f"An error occurred: {e}"
         })
-    
+        
     # After appending messages, rerun to update the UI
     st.rerun()
 elif submit_button and not user_input.strip():
