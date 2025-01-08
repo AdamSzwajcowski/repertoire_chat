@@ -22,7 +22,6 @@ services:
       POSTGRES_PASSWORD: adam1234
       POSTGRES_DB: Repertoire
     volumes:
-      - pgdata:/var/lib/postgresql/data
       - ./backend/Repertoire.sql:/docker-entrypoint-initdb.d/Repertoire.sql
 
     ports:

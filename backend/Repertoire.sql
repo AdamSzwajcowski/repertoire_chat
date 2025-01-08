@@ -5,7 +5,7 @@
 -- Dumped from database version 17.0
 -- Dumped by pg_dump version 17.0
 
--- Started on 2024-12-30 13:49:22 CET
+-- Started on 2025-01-08 14:38:15 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -25,7 +25,7 @@ SET default_table_access_method = heap;
 
 --
 -- TOC entry 220 (class 1259 OID 16439)
--- Name: duo; Type: TABLE; Schema: public; Owner: postgres
+-- Name: duo; Type: TABLE; Schema: public; Owner: adam
 --
 
 CREATE TABLE public.duo (
@@ -46,7 +46,7 @@ ALTER TABLE public.duo OWNER TO adam;
 
 --
 -- TOC entry 219 (class 1259 OID 16438)
--- Name: duo_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: duo_id_seq; Type: SEQUENCE; Schema: public; Owner: adam
 --
 
 CREATE SEQUENCE public.duo_id_seq
@@ -63,7 +63,7 @@ ALTER SEQUENCE public.duo_id_seq OWNER TO adam;
 --
 -- TOC entry 3615 (class 0 OID 0)
 -- Dependencies: 219
--- Name: duo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: duo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: adam
 --
 
 ALTER SEQUENCE public.duo_id_seq OWNED BY public.duo.id;
@@ -71,7 +71,7 @@ ALTER SEQUENCE public.duo_id_seq OWNED BY public.duo.id;
 
 --
 -- TOC entry 218 (class 1259 OID 16393)
--- Name: solo; Type: TABLE; Schema: public; Owner: postgres
+-- Name: solo; Type: TABLE; Schema: public; Owner: adam
 --
 
 CREATE TABLE public.solo (
@@ -92,7 +92,7 @@ ALTER TABLE public.solo OWNER TO adam;
 
 --
 -- TOC entry 217 (class 1259 OID 16392)
--- Name: solo_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: solo_id_seq; Type: SEQUENCE; Schema: public; Owner: adam
 --
 
 CREATE SEQUENCE public.solo_id_seq
@@ -109,7 +109,7 @@ ALTER SEQUENCE public.solo_id_seq OWNER TO adam;
 --
 -- TOC entry 3616 (class 0 OID 0)
 -- Dependencies: 217
--- Name: solo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: solo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: adam
 --
 
 ALTER SEQUENCE public.solo_id_seq OWNED BY public.solo.id;
@@ -117,7 +117,7 @@ ALTER SEQUENCE public.solo_id_seq OWNED BY public.solo.id;
 
 --
 -- TOC entry 3456 (class 2604 OID 16442)
--- Name: duo id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: duo id; Type: DEFAULT; Schema: public; Owner: adam
 --
 
 ALTER TABLE ONLY public.duo ALTER COLUMN id SET DEFAULT nextval('public.duo_id_seq'::regclass);
@@ -125,7 +125,7 @@ ALTER TABLE ONLY public.duo ALTER COLUMN id SET DEFAULT nextval('public.duo_id_s
 
 --
 -- TOC entry 3455 (class 2604 OID 16396)
--- Name: solo id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: solo id; Type: DEFAULT; Schema: public; Owner: adam
 --
 
 ALTER TABLE ONLY public.solo ALTER COLUMN id SET DEFAULT nextval('public.solo_id_seq'::regclass);
@@ -134,11 +134,10 @@ ALTER TABLE ONLY public.solo ALTER COLUMN id SET DEFAULT nextval('public.solo_id
 --
 -- TOC entry 3609 (class 0 OID 16439)
 -- Dependencies: 220
--- Data for Name: duo; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: duo; Type: TABLE DATA; Schema: public; Owner: adam
 --
 
 COPY public.duo (id, artist, title, artist_alternative, title_alternative, known_from, tags, sara, dominika, ania) FROM stdin;
-6	Britney Spears	Toxic	{"Melanie Martinez"}	\N	\N	{pop,R&B}	cis (+1)	\N	\N
 10	Amy Winehouse	You Know I'm No Good	\N	{"You Know That I'm No Good"}	\N	{pop,R&B}	d	\N	\N
 13	Jorja Smith	On My Mind	\N	\N	\N	{pop,R&B}	gis (-2)	\N	\N
 20	Joy Crookes	Two Nights	\N	\N	\N	{pop,R&B}	h (-1)	\N	\N
@@ -165,9 +164,10 @@ COPY public.duo (id, artist, title, artist_alternative, title_alternative, known
 14	Tones and I	Dance Monkey	\N	\N	\N	{pop,dance}	fis	\N	\N
 51	Alicia Keys	If I Ain't Got You	\N	\N	\N	{pop}	G	\N	\N
 15	Billie Eillish	Bad Guy	\N	\N	\N	{pop,dance}	g	\N	\N
+6	Britney Spears	Toxic	{"Melanie Martinez"}	\N	\N	{pop,R&B}	cis (+1)	D	\N
 11	Kings of Leon	Sex on Fire	\N	\N	\N	{rock,pop}	E	E	E
 68	Shocking Blue	Venus	\N	\N	\N	{rock,pop}	\N	e	\N
-66	Gloria Gaynor	I Will Survive	\N	\N	\N	{pop,dance}	\N	a	a
+66	Gloria Gaynor	I Will Survive	\N	\N	\N	{pop,dance,soul}	\N	a	a
 70	The Pointer Sisters	I'm So Excited	\N	\N	\N	{pop,dance}	\N	g	e (-3)
 69	ABBA	Waterloo	\N	\N	\N	{pop}	\N	D	\N
 1	Bajm	Co mi Panie dasz	\N	\N	\N	{rock,pop,Polish,ballad}	c (-4)	c (-4)	c (-4)
@@ -178,9 +178,10 @@ COPY public.duo (id, artist, title, artist_alternative, title_alternative, known
 78	Frank Sinatra	Fly Me to the Moon	\N	\N	\N	{jazz}	\N	a	a
 38	Krzysztof Zalewski & Maria Dębska	Nie będzie romansu	{"Krzysztof Zalewski","Maria Dębska"}	\N	Bo we mnie jest seks	{film,Polish,"Bo we mnie jest seks"}	c	\N	\N
 21	Amy Winehouse	Back to Black	\N	\N	\N	{R&B,ballad}	d	\N	\N
-25	Amy Winehouse	Will You Still Love Me Tomorrow	{"The Shirelles","Leslie Grace"}	\N	\N	{R&B,ballad}	C	\N	\N
-19	Tina Turner	Simply The Best	\N	\N	\N	{R&B}	E (-1)	E (-1)	E (-1)
-37	Cher	Believe	{"John Adams"}	\N	\N	{pop,R&B,ballad}	E (-2)	\N	Fis
+25	Amy Winehouse	Will You Still Love Me Tomorrow	{"The Shirelles","Leslie Grace"}	\N	\N	{soul,ballad}	C	\N	\N
+19	Tina Turner	Simply The Best	\N	\N	\N	{R&B,pop}	E (-1)	E (-1)	E (-1)
+37	Cher	Believe	{"John Adams"}	\N	\N	{pop,soul,ballad}	E (-2)	\N	Fis
+18	Amy Winehouse	Love Is a Losing Game	\N	\N	\N	{jazz,soul}	C	\N	\N
 28	Imany	You Will Never Know	\N	\N	\N	{pop,R&B}	g	\N	\N
 30	Lenny Kravitz	I Belong to You	\N	\N	\N	{pop,R&B}	c	\N	\N
 34	Billie Eillish	Bossa Nova	\N	\N	\N	{pop,R&B}	g	\N	\N
@@ -194,7 +195,6 @@ COPY public.duo (id, artist, title, artist_alternative, title_alternative, known
 42	Lionel Ritchie	All Night Long	\N	\N	\N	{pop,R&B,dance}	G (-1)	\N	\N
 73	Margaret	Wasted	\N	\N	\N	{pop,dance}	\N	e	\N
 74	Moloko	Sing It Back	\N	\N	\N	{pop,dance}	\N	es	\N
-18	Amy Winehouse	Love Is a Losing Game	\N	\N	\N	{jazz}	C	\N	\N
 61	Madonna	La Isla Bonita	{"Krzysztof Antkowiak"}	\N	\N	{meme,Spanish,pop,dance}	h (-2)	\N	\N
 35	Lady Gaga	Bad Romance	\N	\N	\N	{pop,dance}	a	\N	\N
 52	The Mamas & The Papas	Dream a Little Dream of You	\N	\N	\N	{jazz,R&B,pop}	\N	C (-1)	\N
@@ -211,6 +211,8 @@ COPY public.duo (id, artist, title, artist_alternative, title_alternative, known
 98	Brenda Lee	Rockin' Around Christmas Tree	\N	\N	\N	{Christmas,R&B}	G (-1)	\N	\N
 100	Sia	Snowman	\N	\N	\N	{pop,Christmas}	Des	\N	\N
 99	Johnny Marks	Rudolph the Red-Nosed Reindeer	{"Zbigniew Wodecki","Gene Autry"}	{"Rudolf Czerwononosy"}	\N	{jazz,Christmas}	G (-1)	\N	\N
+102	Laufey	From the Start	\N	\N	\N	{jazz,pop}	\N	es	\N
+101	James Brown	I Got You (I Feel Good)	\N	{"I Got You","I Feel Good"}	\N	{soul,funk}	\N	D	\N
 49	Laufey	Street by Street	\N	\N	\N	{jazz}	C	\N	\N
 41	Kayah	Testosteron	\N	\N	\N	{pop,R&B}	d	d	d
 31	LP	Lost on You	\N	\N	\N	{pop,R&B}	\N	\N	\N
@@ -244,7 +246,7 @@ COPY public.duo (id, artist, title, artist_alternative, title_alternative, known
 --
 -- TOC entry 3607 (class 0 OID 16393)
 -- Dependencies: 218
--- Data for Name: solo; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: solo; Type: TABLE DATA; Schema: public; Owner: adam
 --
 
 COPY public.solo (id, artist, youtube_link, musicsheet_link, capo, tags, title, known_from, title_alternative, artist_alternative) FROM stdin;
@@ -289,6 +291,7 @@ COPY public.solo (id, artist, youtube_link, musicsheet_link, capo, tags, title, 
 148	\N	https://youtu.be/9Ve8wu3K9gU	https://www.musicnotes.com/l/5R7KW	3	{film,musical,Disney,pop}	Breaking Free	High School Musical	\N	{"Jamie Houston","Zac Efron","Vanessa Hudgens","Zac Efron & Vanessa Hudgens"}
 149	Deep Purple	https://www.youtube.com/shorts/4eTyorDOx30	\N	0	{rock,meme}	Smoke on the Water	\N	\N	\N
 150	Johnny Marks	https://youtu.be/ZwMzDAKeecw	https://www.musicnotes.com/l/hGcKQ	0	{Christmas,jazz}	Rudolph the Red-Nosed Reindeer	\N	{"Rudolf Czerwononosy"}	\N
+151	Brathanki	https://youtu.be/oIluZ2Vswm0	\N	\N	{meme,Polish,folk,rock}	Czerwone korale	\N	{"Sprężone korale","Sprenrzone korale"}	{WIXAPOL}
 75	Krzysztof Antkowiak	\N	\N	0	{pop,meme,Polish}	Zakazany owoc	\N	\N	\N
 118	Garou	\N	\N	2	{pop,French}	Gitan	\N	\N	\N
 113	a-ha	\N	\N	0	{pop,disco}	Take On Me	\N	\N	\N
@@ -404,7 +407,7 @@ COPY public.solo (id, artist, youtube_link, musicsheet_link, capo, tags, title, 
 --
 -- TOC entry 3617 (class 0 OID 0)
 -- Dependencies: 219
--- Name: duo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: duo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: adam
 --
 
 SELECT pg_catalog.setval('public.duo_id_seq', 90, true);
@@ -413,15 +416,15 @@ SELECT pg_catalog.setval('public.duo_id_seq', 90, true);
 --
 -- TOC entry 3618 (class 0 OID 0)
 -- Dependencies: 217
--- Name: solo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: solo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: adam
 --
 
-SELECT pg_catalog.setval('public.solo_id_seq', 149, true);
+SELECT pg_catalog.setval('public.solo_id_seq', 150, true);
 
 
 --
 -- TOC entry 3460 (class 2606 OID 16446)
--- Name: duo duo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: duo duo_pkey; Type: CONSTRAINT; Schema: public; Owner: adam
 --
 
 ALTER TABLE ONLY public.duo
@@ -430,14 +433,14 @@ ALTER TABLE ONLY public.duo
 
 --
 -- TOC entry 3458 (class 2606 OID 16400)
--- Name: solo solo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: solo solo_pkey; Type: CONSTRAINT; Schema: public; Owner: adam
 --
 
 ALTER TABLE ONLY public.solo
     ADD CONSTRAINT solo_pkey PRIMARY KEY (id);
 
 
--- Completed on 2024-12-30 13:49:22 CET
+-- Completed on 2025-01-08 14:38:15 CET
 
 --
 -- PostgreSQL database dump complete

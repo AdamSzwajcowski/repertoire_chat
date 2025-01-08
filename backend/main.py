@@ -17,14 +17,17 @@ async def read_root():
 
 @app.post("/generate-response/")
 async def generate_response(user_input: UserInput, request: Request):
-    
     # delete inactive sessions to avoid resource leak
     current_time = time.time()
+    keys_to_delete = []
     for ip, session in user_sessions.items():
-        if current_time - session.last_activity > SESSION_TIMEOUT: del user_sessions[ip] 
+        if current_time - session.last_activity > SESSION_TIMEOUT:
+            keys_to_delete.append(ip)
+    for ip in keys_to_delete:       # delete keys outside of iteration
+        del user_sessions[ip]
     
     # get user's IP
-    user_ip = request.headers.get("X-Forwarded-For")
+    user_ip = request.client.host
     
     # get the current session (initiate first if not created yet)
     if user_ip not in user_sessions:
