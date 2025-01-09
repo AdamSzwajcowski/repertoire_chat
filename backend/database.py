@@ -143,7 +143,7 @@ class Database:
         for ngram in sentence_ngrams:
             match_artist = max(fuzz.ratio(' '.join(list(ngram)), artist.lower()), match_artist)
             
-        if match_title < 75 and match_artist < 75: # nothing found, call misunderstanding
+        if match_title <= 75 and match_artist <= 75: # nothing found, call misunderstanding
             category = []
             proper_name = []
         elif match_title > match_artist:
@@ -205,7 +205,7 @@ class Database:
             artist, match = self.find_best_match('artist', proper_name, soloduo, singer, True)
             artist = artist.replace("'", "''") # double the apostrophes for SQL query
             if match > 75:
-                # if matching enough artist found, return their all songs from relevant repertoire
+                # if matching enough artist found, return all their songs from relevant repertoire
                 song_ids = self.find_songs_by_artist(artist, soloduo, singer)
                 self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
                                  WHERE id IN({', '.join(map(str, song_ids))})''')
@@ -231,10 +231,19 @@ class Database:
                                  WHERE '{proper_name}' ILIKE ANY(tags)
                                  AND {singer} IS NOT NULL''') 
                 song_list = self.format_songs(self.cur.fetchall())
-                return(f"Here are the songs from my repertoire with {singer.capitalize()} "
-                       f"that are labeled as {proper_name}:\n" + song_list)
+                if song_list:
+                    return(f"Here are the songs from my repertoire with {singer.capitalize()} "
+                           f"that are labeled as {proper_name}:\n" + song_list)
+                else:
+                    return(f"I'm afraid I don't have any songs labeled as {proper_name} "
+                           f"in my repertoire with {singer.capitalize()}.")
             else:
                 self.cur.execute(f'''SELECT title, artist, known_from FROM {soloduo}
                                  WHERE '{proper_name}' ILIKE ANY(tags)''')
-                song_list = self.format_songs(self.cur.fetchall())                         
-                return(f"Here are the songs from my {soloduo} repertoire that are labeled as {proper_name}:\n" + song_list)
+                song_list = self.format_songs(self.cur.fetchall())   
+                if song_list:                      
+                    return(f"Here are the songs from my {soloduo} repertoire that are "
+                           f"labeled as {proper_name}:\n" + song_list)
+                else:
+                    return(f"I'm afraid I don't have any songs labeled as {proper_name} "
+                           f"in my {soloduo} repertoire.")
