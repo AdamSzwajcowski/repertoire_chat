@@ -1,5 +1,5 @@
 # 1. Project Overview
-The goal of the presented chatbot is to help navigate around my repertoire stored in a Postgres database. The chatbot itself is a simple app using mostly two approaches to gather the user's intent - keyword detection and neural network (NN) based on a bag-of-words model. The chatbot is available [here](http://54.87.244.24:8501/).
+The goal of the presented chatbot is to help navigate around my repertoire stored in a Postgres database. The chatbot itself is a simple app using mostly two approaches to gather the user's intent - keyword detection and neural network (NN) based on a bag-of-words model. The chatbot is available [here](http://54.87.244.24:8501/). You can also watch the [YouTube video](https://youtu.be/fTZYHPaikJQ) presenting how it works.
 # 2. Project Objective
 While the chatbot is somewhat useful to me, it was created mostly as a portfolio project, aiming to present my programming abilities and fill some gaps in my technology stack. Since I'm not particularly interested in the frontend, I delegated it to ChatGPT - the UI is by no means perfect, but it is enough to effectively demonstrate how the chatbot works. For backend, I also used ChatGPT extensively, but only as a partner to discuss pros and cons of various approaches to the application design.
 # 3. File Description
@@ -56,8 +56,7 @@ If the model isn't sure what the user means with a given prompt, it will perform
 ### 4.6. Misunderstandings
 If the user intent is not clear to the model, and the ambiguous search doesn't return any results, the chatbot will ask the user for clarification, keeping the context. If there are two misunderstandings in a row, the user likely calls for an unfeasible action - in such a case, the model informs the user that it is unable to help them and clears the conversation context.
 ### 4.7. Session Management
-Each time the API endpoint is called, the API checks if there are any inactive sessions (no message in 10+ minutes) and deletes them. Then it checks the user's IP using  `request.headers.get("X-Forwarded-For")`. If there is an active session for the IP, the prompt is assigned to that session, otherwise, a new session is created. This process allows for different users to use the chatbot simultaneously, as each of them has their own `ResponseGenerator` object storing the context of the conversation.
-
+The chatbot utilizes session cookies to manage sessions. When new instance is opened a cookie is created that is unique to the session. This process allows for different users to use the chatbot simultaneously, as each of them has their own `ResponseGenerator` object storing the context of the conversation. Each time the API endpoint is called, the API checks if there are any inactive sessions (no message in 10+ minutes) and deletes them to avoid the resource leak.
 # 5. List of Technologies
 - Python - main programming language
 - Keras (TensorFlow) - for the core of the intent recognition
